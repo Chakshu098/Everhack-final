@@ -1,0 +1,284 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* EverHack Dark Cinematic Theme */
+    --background: 220 20% 4%;
+    --foreground: 180 10% 92%;
+
+    --card: 220 18% 7%;
+    --card-foreground: 180 10% 92%;
+
+    --popover: 220 18% 7%;
+    --popover-foreground: 180 10% 92%;
+
+    /* Teal/Cyan accent from logo */
+    --primary: 174 72% 50%;
+    --primary-foreground: 220 20% 4%;
+
+    /* Gold/Bronze accent from logo typography */
+    --secondary: 43 45% 45%;
+    --secondary-foreground: 220 20% 4%;
+
+    --muted: 220 15% 12%;
+    --muted-foreground: 220 10% 55%;
+
+    --accent: 174 72% 50%;
+    --accent-foreground: 220 20% 4%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 15% 15%;
+    --input: 220 15% 12%;
+    --ring: 174 72% 50%;
+
+    --radius: 0.75rem;
+
+    /* Custom EverHack tokens */
+    --glow-primary: 0 0 40px hsla(174, 72%, 50%, 0.3);
+    --glow-secondary: 0 0 60px hsla(43, 45%, 45%, 0.2);
+    --gradient-hero: linear-gradient(180deg, hsla(220, 20%, 4%, 0) 0%, hsla(220, 20%, 4%, 1) 100%);
+    --gradient-card: linear-gradient(145deg, hsla(220, 18%, 10%, 1) 0%, hsla(220, 18%, 5%, 1) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(174, 72%, 50%) 0%, hsl(174, 72%, 35%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(43, 45%, 50%) 0%, hsl(35, 50%, 40%) 100%);
+
+    /* Typography */
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+
+    /* Sidebar defaults */
+    --sidebar-background: 220 18% 6%;
+    --sidebar-foreground: 180 10% 92%;
+    --sidebar-primary: 174 72% 50%;
+    --sidebar-primary-foreground: 220 20% 4%;
+    --sidebar-accent: 220 15% 12%;
+    --sidebar-accent-foreground: 180 10% 92%;
+    --sidebar-border: 220 15% 15%;
+    --sidebar-ring: 174 72% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+}
+
+@layer components {
+  /* Cinematic glow effects */
+  .glow-primary {
+    box-shadow: var(--glow-primary);
+  }
+
+  .glow-secondary {
+    box-shadow: var(--glow-secondary);
+  }
+
+  /* Glass morphism card */
+  .glass-card {
+    @apply bg-card/50 backdrop-blur-xl border border-border/50;
+    background: var(--gradient-card);
+  }
+
+  /* Text gradients */
+  .text-gradient-primary {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-accent);
+  }
+
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-gold);
+  }
+
+  /* Cinematic image overlay */
+  .cinematic-overlay {
+    @apply absolute inset-0;
+    background: var(--gradient-hero);
+  }
+
+  /* Subtle hover lift */
+  .hover-lift {
+    @apply transition-all duration-500 ease-out;
+  }
+
+  .hover-lift:hover {
+    @apply -translate-y-1;
+    box-shadow: 0 20px 40px -15px hsla(174, 72%, 50%, 0.2);
+  }
+
+  /* Animated border */
+  .animated-border {
+    @apply relative overflow-hidden;
+  }
+
+  .animated-border::before {
+    content: '';
+    @apply absolute inset-0 rounded-lg;
+    padding: 1px;
+    background: linear-gradient(135deg, hsl(174, 72%, 50%), transparent, hsl(43, 45%, 45%));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  /* Section spacing */
+  .section-padding {
+    @apply py-20 md:py-32;
+  }
+
+  /* Container with max width */
+  .container-wide {
+    @apply max-w-7xl mx-auto px-6 lg:px-8;
+  }
+}
+
+@layer utilities {
+  /* Custom animations */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slide-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  .animate-fade-up {
+    animation: fade-up 0.8s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.6s ease-out forwards;
+  }
+
+  .animate-slide-in-right {
+    animation: slide-in-right 0.6s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.5s ease-out forwards;
+  }
+
+  /* Stagger delays */
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+
+  /* Glitch Animation */
+  @keyframes glitch-anim-1 {
+    0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 1px); }
+    20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); }
+    40% { clip-path: inset(40% 0 50% 0); transform: translate(-2px, 2px); }
+    60% { clip-path: inset(80% 0 5% 0); transform: translate(2px, -2px); }
+    80% { clip-path: inset(10% 0 70% 0); transform: translate(-1px, 1px); }
+    100% { clip-path: inset(30% 0 50% 0); transform: translate(1px, -1px); }
+  }
+
+  @keyframes glitch-anim-2 {
+    0% { clip-path: inset(10% 0 60% 0); transform: translate(2px, -1px); }
+    20% { clip-path: inset(80% 0 5% 0); transform: translate(-2px, 2px); }
+    40% { clip-path: inset(30% 0 20% 0); transform: translate(2px, 1px); }
+    60% { clip-path: inset(10% 0 80% 0); transform: translate(-2px, -2px); }
+    80% { clip-path: inset(40% 0 30% 0); transform: translate(2px, 1px); }
+    100% { clip-path: inset(50% 0 30% 0); transform: translate(-1px, 1px); }
+  }
+
+  .glitch-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+
+  .glitch::before,
+  .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--background);
+  }
+
+  .glitch::before {
+    left: 2px;
+    text-shadow: -1px 0 #ff00c1;
+    clip-path: inset(44% 0 61% 0);
+    animation: glitch-anim-1 2.5s infinite linear alternate-reverse;
+  }
+
+  .glitch::after {
+    left: -2px;
+    text-shadow: -1px 0 #00fff9;
+    clip-path: inset(44% 0 61% 0);
+    animation: glitch-anim-2 3s infinite linear alternate-reverse;
+  }
+}
