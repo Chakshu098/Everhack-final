@@ -45,7 +45,14 @@ export interface Event {
   results_published?: boolean;
   rules?: string[];
   timeline?: { time: string; event: string }[];
+  partners?: Partner[];
   organizer?: string;
+}
+
+export interface Partner {
+  name: string;
+  logo_url: string;
+  website_url?: string;
 }
 
 export interface Registration {
@@ -76,7 +83,11 @@ const INITIAL_EVENTS: Event[] = [
     status: "upcoming",
     organizer: "CyberSec Foundation",
     rules: ["Teams of 1-4 members", "No sharing flags", "No attacking infra"],
-    timeline: [{ time: "Day 1 9:00 AM", event: "Kickoff" }]
+    timeline: [{ time: "Day 1 9:00 AM", event: "Kickoff" }],
+    partners: [
+      { name: "TechCorp", logo_url: "https://api.dicebear.com/7.x/identicon/svg?seed=TechCorp", website_url: "https://example.com" },
+      { name: "CyberSystems", logo_url: "https://api.dicebear.com/7.x/identicon/svg?seed=CyberSystems" }
+    ]
   },
   {
     id: "buildverse-hackathon",

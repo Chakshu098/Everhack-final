@@ -13,6 +13,7 @@ import {
   Clock,
   ArrowLeft,
   Check,
+  ExternalLink,
 } from "lucide-react";
 import { mockDb, Event } from "@/lib/mockData";
 import { GlitchText } from "@/components/ui/GlitchText";
@@ -55,7 +56,7 @@ export default function EventDetail() {
     );
   }
 
-  const progressPercentage = (event.participants / event.max_participants) * 100;
+  const progressPercentage = ((event.participants || 0) / (event.max_participants || 1)) * 100;
 
   return (
     <div className="min-h-screen bg-background">
@@ -64,7 +65,7 @@ export default function EventDetail() {
       {/* Hero Banner */}
       <section className="relative h-[60vh] min-h-[400px]">
         <img
-          src={event.image_url}
+          src={event.image_url || "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070"}
           alt={event.title}
           className="w-full h-full object-cover"
         />
@@ -175,6 +176,38 @@ export default function EventDetail() {
                   ))}
                 </div>
               </motion.div>
+
+              {/* Partners & Sponsors */}
+              {event.partners && event.partners.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                >
+                  <h2 className="font-display text-2xl font-semibold mb-6">Partners & Sponsors</h2>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                    {event.partners.map((partner, index) => (
+                      <a
+                        key={index}
+                        href={partner.website_url || "#"}
+                        target={partner.website_url ? "_blank" : "_self"}
+                        rel="noopener noreferrer"
+                        className="glass-card p-4 rounded-xl flex flex-col items-center justify-center gap-3 hover:bg-muted/50 transition-colors group text-center"
+                      >
+                        <img src={partner.logo_url} alt={partner.name} className="w-16 h-16 object-contain grayscale group-hover:grayscale-0 transition-all opacity-70 group-hover:opacity-100" />
+                        <div className="space-y-1">
+                          <p className="font-semibold text-sm">{partner.name}</p>
+                          {partner.website_url && (
+                            <div className="flex items-center justify-center text-xs text-muted-foreground gap-1">
+                              Visit <ExternalLink size={10} />
+                            </div>
+                          )}
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
             </div>
 
             {/* Sidebar */}
@@ -210,7 +243,7 @@ export default function EventDetail() {
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-muted-foreground">
                       <Users size={14} className="inline mr-1" />
-                      {event.participants.toLocaleString()} registered
+                      {(event.participants || 0).toLocaleString()} registered
                     </span>
                     <span className="text-muted-foreground">
                       {event.max_participants.toLocaleString()} max
@@ -256,9 +289,9 @@ export default function EventDetail() {
             </div>
           </div>
         </div>
-      </section>
+      </section >
 
       <Footer />
-    </div>
+    </div >
   );
 }

@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { mockDb } from "@/lib/mockData";
+import { mockDb, Partner } from "@/lib/mockData";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { z } from "zod";
@@ -26,6 +26,8 @@ interface Event {
   difficulty: string | null;
   status: string;
   rules: string | null;
+  partners?: Partner[];
+  participants: number; // Add participants
 }
 
 interface EventFormDialogProps {
@@ -38,7 +40,7 @@ interface EventFormDialogProps {
 const eventSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
   description: z.string().max(2000).optional(),
-  event_type: z.enum(["hackathon", "ctf", "workshop"]),
+  event_type: z.enum(["Hackathon", "CTF", "Workshop"]),
   image_url: z.string().url().optional().or(z.literal("")),
   start_date: z.string().min(1, "Start date is required"),
   end_date: z.string().min(1, "End date is required"),
@@ -49,6 +51,11 @@ const eventSchema = z.object({
   difficulty: z.enum(["beginner", "intermediate", "advanced"]).optional().nullable(),
   status: z.enum(["upcoming", "ongoing", "completed", "cancelled"]),
   rules: z.string().max(5000).optional(),
+  partners: z.array(z.object({
+    name: z.string().min(1),
+    logo_url: z.string().url(),
+    website_url: z.string().url().optional().or(z.literal(""))
+  })).optional(),
 });
 
 export function EventFormDialog({
@@ -58,14 +65,14 @@ export function EventFormDialog({
   onSuccess,
 }: EventFormDialogProps) {
   const { user } = useAuth();
-  const { toast } = useToast();
+  const { toast } = useToast(); // Ensure toast is destructured
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    event_type: "hackathon" as "hackathon" | "ctf" | "workshop",
+    event_type: "Hackathon" as "Hackathon" | "CTF" | "Workshop",
     image_url: "",
     start_date: "",
     end_date: "",
@@ -76,14 +83,33 @@ export function EventFormDialog({
     difficulty: "" as "" | "beginner" | "intermediate" | "advanced",
     status: "upcoming" as "upcoming" | "ongoing" | "completed" | "cancelled",
     rules: "",
+    partners: [] as Partner[],
   });
+
+  // Partner input state
+  const [newPartner, setNewPartner] = useState<Partner>({ name: "", logo_url: "", website_url: "" });
+
+  const addPartner = () => {
+    if (!newPartner.name || !newPartner.logo_url) {
+      toast({ title: "Error", description: "Name and Logo URL are required", variant: "destructive" });
+      return;
+    }
+    setFormData({ ...formData, partners: [...formData.partners, newPartner] });
+    setNewPartner({ name: "", logo_url: "", website_url: "" });
+  };
+
+  const removePartner = (index: number) => {
+    const updated = [...formData.partners];
+    updated.splice(index, 1);
+    setFormData({ ...formData, partners: updated });
+  };
 
   useEffect(() => {
     if (event) {
       setFormData({
         title: event.title,
         description: event.description || "",
-        event_type: event.event_type as "hackathon" | "ctf" | "workshop",
+        event_type: event.event_type as "Hackathon" | "CTF" | "Workshop",
         image_url: event.image_url || "",
         start_date: event.start_date.split("T")[0],
         end_date: event.end_date.split("T")[0],
@@ -94,12 +120,13 @@ export function EventFormDialog({
         difficulty: (event.difficulty as "" | "beginner" | "intermediate" | "advanced") || "",
         status: event.status as "upcoming" | "ongoing" | "completed" | "cancelled",
         rules: event.rules || "",
+        partners: event.partners || [],
       });
     } else {
       setFormData({
         title: "",
         description: "",
-        event_type: "hackathon",
+        event_type: "Hackathon",
         image_url: "",
         start_date: "",
         end_date: "",
@@ -110,6 +137,7 @@ export function EventFormDialog({
         difficulty: "",
         status: "upcoming",
         rules: "",
+        partners: [],
       });
     }
     setErrors({});
@@ -118,6 +146,16 @@ export function EventFormDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
+
+    // Check if there are unsaved partner details
+    if (newPartner.name || newPartner.logo_url) {
+      toast({
+        title: "Unsaved Partner",
+        description: "You have entered partner details but haven't clicked 'Add'. Please add the partner or clear the fields.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const dataToValidate = {
       title: formData.title,
@@ -135,6 +173,7 @@ export function EventFormDialog({
       difficulty: formData.difficulty || null,
       status: formData.status,
       rules: formData.rules || undefined,
+      partners: formData.partners,
     };
 
     const result = eventSchema.safeParse(dataToValidate);
@@ -152,11 +191,23 @@ export function EventFormDialog({
 
     setIsSubmitting(true);
 
+    // Auto-assign random cyber image if empty
+    const CYBER_IMAGES = [
+      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=2070", // Matrix code
+      "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070", // Cyberpunk city
+      "https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?auto=format&fit=crop&q=80&w=2787", // Tech workshop
+      "https://images.unsplash.com/photo-1510511459019-5dda7724fd87?auto=format&fit=crop&q=80&w=2070", // Technology
+      "https://images.unsplash.com/photo-1563206767-5b1d97289374?auto=format&fit=crop&q=80&w=2072", // Abstract neon
+      "https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?auto=format&fit=crop&q=80&w=2070", // Code screen
+    ];
+
+    const finalImageUrl = formData.image_url || CYBER_IMAGES[Math.floor(Math.random() * CYBER_IMAGES.length)];
+
     const payload = {
       title: formData.title,
       description: formData.description || null,
       event_type: formData.event_type,
-      image_url: formData.image_url || null,
+      image_url: finalImageUrl,
       start_date: new Date(formData.start_date).toISOString(),
       end_date: new Date(formData.end_date).toISOString(),
       location: formData.location || null,
@@ -168,6 +219,7 @@ export function EventFormDialog({
       difficulty: formData.difficulty || null,
       status: formData.status,
       rules: formData.rules || null,
+      partners: formData.partners || [],
       created_by: user?.id,
     };
 
@@ -185,6 +237,7 @@ export function EventFormDialog({
           prize_pool: payload.prize_pool || "",
           difficulty: payload.difficulty || "",
           rules: (payload.rules || "").split('\n'), // simple split for mock data
+          partners: payload.partners,
           timeline: [] // mock data requirement
         };
 
@@ -207,6 +260,8 @@ export function EventFormDialog({
           max_participants: payload.max_participants || 0,
           prize_pool: payload.prize_pool || "",
           difficulty: payload.difficulty || "",
+          partners: payload.partners,
+          participants: event.participants, // Preserve existing participants
         };
 
         await mockDb.updateEvent(mockEventData);
@@ -222,6 +277,8 @@ export function EventFormDialog({
           max_participants: payload.max_participants || 0,
           prize_pool: payload.prize_pool || "",
           difficulty: payload.difficulty || "",
+          partners: payload.partners,
+          participants: 0, // Initialize participants
           timeline: []
         };
         await mockDb.createEvent(mockEventData);
@@ -298,9 +355,9 @@ export function EventFormDialog({
                 }
                 className="w-full px-4 py-2.5 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
               >
-                <option value="hackathon">Hackathon</option>
-                <option value="ctf">CTF</option>
-                <option value="workshop">Workshop</option>
+                <option value="Hackathon">Hackathon</option>
+                <option value="CTF">CTF</option>
+                <option value="Workshop">Workshop</option>
               </select>
             </div>
 
@@ -465,6 +522,52 @@ export function EventFormDialog({
                 className="w-full px-4 py-2.5 rounded-lg bg-muted border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
                 placeholder="Event rules and guidelines"
               />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-2">Partners & Sponsors</label>
+              <div className="space-y-3 mb-4">
+                {formData.partners.map((p, idx) => (
+                  <div key={idx} className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+                    <img src={p.logo_url} alt={p.name} className="w-8 h-8 rounded object-cover" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{p.name}</p>
+                      <p className="text-xs text-muted-foreground">{p.website_url}</p>
+                    </div>
+                    <Button type="button" size="sm" variant="ghost" className="text-destructive h-8 w-8 p-0" onClick={() => removePartner(idx)}>
+                      <span className="sr-only">Remove</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c0 1 1 2 2 2v2" /></svg>
+                    </Button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-2 items-start">
+                <div className="grid grid-cols-2 gap-2 flex-1">
+                  <input
+                    type="text"
+                    placeholder="Partner Name"
+                    value={newPartner.name}
+                    onChange={e => setNewPartner({ ...newPartner, name: e.target.value })}
+                    className="px-3 py-2 rounded-lg bg-muted border border-border text-sm"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Logo URL"
+                    value={newPartner.logo_url}
+                    onChange={e => setNewPartner({ ...newPartner, logo_url: e.target.value })}
+                    className="px-3 py-2 rounded-lg bg-muted border border-border text-sm"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Website URL (optional)"
+                    value={newPartner.website_url}
+                    onChange={e => setNewPartner({ ...newPartner, website_url: e.target.value })}
+                    className="col-span-2 px-3 py-2 rounded-lg bg-muted border border-border text-sm"
+                  />
+                </div>
+                <Button type="button" size="sm" onClick={addPartner} className="mt-1">Add</Button>
+              </div>
             </div>
           </div>
 

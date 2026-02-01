@@ -28,7 +28,7 @@ export default function Events() {
 
   const filteredEvents = events.filter((event) => {
     const matchesFilter =
-      activeFilter === "All" || event.event_type === activeFilter;
+      activeFilter === "All" || event.event_type.toLowerCase() === activeFilter.toLowerCase();
     const matchesSearch =
       event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       event.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -117,7 +117,7 @@ export default function Events() {
                   >
                     <div className="relative aspect-[16/10] overflow-hidden">
                       <img
-                        src={event.image_url}
+                        src={event.image_url || "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070"}
                         alt={event.title}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       />
@@ -145,9 +145,28 @@ export default function Events() {
                         </div>
                         <div className="flex items-center gap-1.5">
                           <Users size={14} />
-                          {event.participants.toLocaleString()}
+                          {(event.participants || 0).toLocaleString()}
                         </div>
                       </div>
+
+                      {/* Partners Preview */}
+                      {event.partners && event.partners.length > 0 && (
+                        <div className="mt-3 flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">Partners:</span>
+                          <div className="flex -space-x-2">
+                            {event.partners.slice(0, 3).map((p, idx) => (
+                              <div key={idx} className="w-6 h-6 rounded-full bg-background border border-border flex items-center justify-center overflow-hidden" title={p.name}>
+                                <img src={p.logo_url} alt={p.name} className="w-full h-full object-cover" />
+                              </div>
+                            ))}
+                            {event.partners.length > 3 && (
+                              <div className="w-6 h-6 rounded-full bg-muted border border-border flex items-center justify-center text-[10px] text-muted-foreground font-medium">
+                                +{event.partners.length - 3}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                       <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
                         <div className="flex items-center gap-1.5 text-secondary font-semibold">
                           <Trophy size={14} />
